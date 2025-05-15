@@ -1,74 +1,129 @@
-<script>
-  document
-    .getElementById("surveyForm")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
-      document.getElementById("status").textContent = "Fetching location...";
-
-      // Get geolocation
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            // Verify location is in Dire Dawa (approximate bounding box)
-            const direDawaBounds = {
-              latMin: 9.5,
-              latMax: 9.7,
-              lonMin: 41.8,
-              lonMax: 42.0,
-            };
-
-            if (
-              lat >= direDawaBounds.latMin &&
-              lat <= direDawaBounds.latMax &&
-              lon >= direDawaBounds.lonMin &&
-              lon <= direDawaBounds.lonMax
-            ) {
-              // Prepare form data
-              const formData = {
-                name: document.getElementById("name").value,
-                response: document.getElementById("response").value,
-                latitude: lat,
-                longitude: lon,
-                timestamp: new Date().toISOString(),
-              };
-
-              // Submit to Google Sheets
-              fetch(
-                "https://script.google.com/macros/s/AKfycbyBFLio_AYeW_Hkb4_eWtwMPFm0sJkdXL0GLP24KOz1T_GW9Z9Cd0BIZMrrAT7AmNx0SA/exec",
-                {
-                  method: "POST",
-                  mode: "no-cors",
-                  body: JSON.stringify(formData),
-                  headers: { "Content-Type": "application/json" },
-                }
-              )
-                .then(() => {
-                  document.getElementById("status").textContent =
-                    "Submission successful!";
-                  document.getElementById("surveyForm").reset();
-                })
-                .catch((error) => {
-                  document.getElementById("status").textContent =
-                    "Error submitting form.";
-                  console.error(error);
-                });
-            } else {
-              document.getElementById("status").textContent =
-                "Error: Location not in Dire Dawa.";
-            }
-          },
-          (error) => {
-            document.getElementById("status").textContent =
-              "Error getting location. Please allow location access.";
-            console.error(error);
-          }
-        );
-      } else {
-        document.getElementById("status").textContent =
-          "Geolocation not supported by your browser.";
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dire Dawa Research Survey</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
       }
-    });
-</script>
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #status {
+        margin-top: 10px;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Dire Dawa Research Survey</h1>
+    <form id="surveyForm">
+      <label for="name">Name:</label>
+      <input type="text" id="name" required />
+
+      <label for="response">Survey Response:</label>
+      <textarea id="response" required></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+    <div id="status"></div>
+
+    <script>
+      document
+        .getElementById("surveyForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          document.getElementById("status").textContent =
+            "Fetching location...";
+
+          // Get geolocation
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                // Verify location is in Dire Dawa (approximate bounding box)
+                const direDawaBounds = {
+                  latMin: 9.5,
+                  latMax: 9.7,
+                  lonMin: 41.8,
+                  lonMax: 42.0,
+                };
+
+                if (
+                  lat >= direDawaBounds.latMin &&
+                  lat <= direDawaBounds.latMax &&
+                  lon >= direDawaBounds.lonMin &&
+                  lon <= direDawaBounds.lonMax
+                ) {
+                  // Prepare form data
+                  const formData = {
+                    name: document.getElementById("name").value,
+                    response: document.getElementById("response").value,
+                    latitude: lat,
+                    longitude: lon,
+                    timestamp: new Date().toISOString(),
+                  };
+
+                  // Submit to Google Sheets
+                  fetch(
+                    "https://script.google.com/macros/s/AKfycbyBFLio_AYeW_Hkb4_eWtwMPFm0sJkdXL0GLP24KOz1T_GW9Z9Cd0BIZMrrAT7AmNx0SA/exec",
+                    {
+                      method: "POST",
+                      mode: "no-cors",
+                      body: JSON.stringify(formData),
+                      headers: { "Content-Type": "application/json" },
+                    }
+                  )
+                    .then(() => {
+                      document.getElementById("status").textContent =
+                        "Submission successful!";
+                      document.getElementById("surveyForm").reset();
+                    })
+                    .catch((error) => {
+                      document.getElementById("status").textContent =
+                        "Error submitting form.";
+                      console.error(error);
+                    });
+                } else {
+                  document.getElementById("status").textContent =
+                    "Error: Location not in Dire Dawa.";
+                }
+              },
+              (error) => {
+                document.getElementById("status").textContent =
+                  "Error getting location. Please allow location access.";
+                console.error(error);
+              }
+            );
+          } else {
+            document.getElementById("status").textContent =
+              "Geolocation not supported by your browser.";
+          }
+        });
+    </script>
+  </body>
+</html>
